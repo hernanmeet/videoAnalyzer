@@ -12,7 +12,7 @@ async function cargarAños() {
 
     // Al cargar la página, también cargamos las compañías y campañas iniciales
     await cargarCompañias();
-    await cargarCampañas();
+    //await cargarCampañas();
     actualizarRuta()
   } catch (error) {
     console.error('Error al cargar los años desde el backend:', error);
