@@ -15,55 +15,65 @@ client = storage.Client()
 export_bucket= client.bucket('videos_online')
 
 def sonidos(archivo):
-    print ("---------- Iniciando Lectura de Sonido Ambiente y Conversaciones ----------")
+    print("---------- Iniciando Lectura de Sonido Ambiente y Conversaciones ----------")
     print("Archivo: ", archivo)
     audio_tagging_time_resolution = 10
     model = whisper.load_model("large-v1")
 
     blob = export_bucket.blob(archivo[len('gs://videos_online/'):])
-    #file_content = BytesIO(blob.download_as_bytes())
     blob.download_to_filename("video.mp4")
 
+    try:
+        result = model.transcribe("video.mp4", at_time_res=audio_tagging_time_resolution, fp16=False)
+    except Exception as e:
+        print(f"Error al transcribir el audio: {e}")
+        return
 
-
-    result = model.transcribe("video.mp4", at_time_res=audio_tagging_time_resolution, fp16=False)
     # ASR Results
-  
-    dftext=pd.DataFrame({"text": [result]})
-    nombre_archivo = re.search(r'/([^/]+)\.\w+$', archivo).group(1) 
-    nombre_archivo_completo = nombre_archivo + "_texto_whisper_contexto.csv"
+    if "text" not in result:
+        print("No hay datos de transcripción para mostrar.")
+    else:
+        dftext = pd.DataFrame({"text": [result["text"]]})
+        nombre_archivo = re.search(r'/([^/]+)\.\w+$', archivo).group(1)
+        nombre_archivo_completo = nombre_archivo + "_texto_whisper_contexto.csv"
 
-   
-    base_path = re.search(r'videos_online/(.*?)/[^/]+$', archivo).group(1)
-    base_path_completo = base_path + "/"
-   
-    dftext.to_csv(nombre_archivo_completo, index=False)
-    blob =export_bucket.blob(base_path_completo+nombre_archivo_completo)
-    blob.upload_from_filename(nombre_archivo_completo)
+        base_path = re.search(r'videos_online/(.*?)/[^/]+$', archivo).group(1)
+        base_path_completo = base_path + "/"
+
+        dftext.to_csv(nombre_archivo_completo, index=False)
+        blob = export_bucket.blob(base_path_completo + nombre_archivo_completo)
+        blob.upload_from_filename(nombre_archivo_completo)
 
     # Audio Tagging Results
-    audio_tag_result = whisper.parse_at_label(result, language='follow_asr', top_k=5, p_threshold=-1, include_class_list=list(range(527)))
-    #print(audio_tag_result)
-    print("-----------------------------------")
-    print(result["text"])
-    print("-----------------------------------")
-    for resultado in audio_tag_result:
-        print(resultado)
-    print("-----------------------------------")
-    df = pd.DataFrame(audio_tag_result)
+    try:
+        audio_tag_result = whisper.parse_at_label(result, language='follow_asr', top_k=5, p_threshold=-1,
+                                                  include_class_list=list(range(527)))
+    except Exception as e:
+        print(f"Error al obtener los resultados de etiquetas de audio: {e}")
+        return
 
-    nombre_archivo = re.search(r'/([^/]+)\.\w+$', archivo).group(1) 
-    nombre_archivo_completo = nombre_archivo + "_audio_contexto.csv"
+    print("-----------------------------------")
+    print(result.get("text", "No hay transcripción disponible."))
+    print("-----------------------------------")
+    if not audio_tag_result:
+        print("No hay resultados de etiquetas de audio para mostrar.")
+    else:
+        for resultado in audio_tag_result:
+            print(resultado)
+        print("-----------------------------------")
+        df = pd.DataFrame(audio_tag_result)
 
-   
-    base_path = re.search(r'videos_online/(.*?)/[^/]+$', archivo).group(1)
-    base_path_completo = base_path + "/"
-   
-    df.to_csv(nombre_archivo_completo, index=False)
-    blob =export_bucket.blob(base_path_completo+nombre_archivo_completo)
-    blob.upload_from_filename(nombre_archivo_completo)
-    
-    print ("------------ Fin de Lectura de Sonido Ambiente y Conversaciones ------------")
+        nombre_archivo = re.search(r'/([^/]+)\.\w+$', archivo).group(1)
+        nombre_archivo_completo = nombre_archivo + "_audio_contexto.csv"
+
+        base_path = re.search(r'videos_online/(.*?)/[^/]+$', archivo).group(1)
+        base_path_completo = base_path + "/"
+
+        df.to_csv(nombre_archivo_completo, index=False)
+        blob = export_bucket.blob(base_path_completo + nombre_archivo_completo)
+        blob.upload_from_filename(nombre_archivo_completo)
+
+    print("------------ Fin de Lectura de Sonido Ambiente y Conversaciones ------------")
 
 # if __name__ == "__main__":
 #     import sys

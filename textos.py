@@ -47,7 +47,7 @@ def detect_text(
 def print_video_text(results: vi.VideoAnnotationResults, video_uri, min_frames: int = 15):
     annotations = sorted_by_first_segment_end(results.text_annotations)
 
-    columnas = ['confidence', 'text','t_inicio','cantidad_segundos', 'frames']
+    columnas = ['confidence', 'text', 't_inicio', 'cantidad_segundos', 'frames']
     df = pd.DataFrame(columns=columnas)
 
     print(" Detected text ".center(80, "-"))
@@ -60,22 +60,30 @@ def print_video_text(results: vi.VideoAnnotationResults, video_uri, min_frames: 
             confidence = text_segment.confidence
             start = text_segment.segment.start_time_offset
             seconds = segment_seconds(text_segment.segment)
-            #print(text)
             print(f"  {confidence:4.0%} | {start} + {seconds:.1f}s | {frames} fr.")
-            datos_fila = {'confidence': [confidence], 'text':[text],'t_inicio': [start],'cantidad_segundos':[seconds], 'frames':[frames]}
+            
+            datos_fila = {'confidence': [confidence], 'text': [text], 't_inicio': [start],
+                          'cantidad_segundos': [seconds], 'frames': [frames]}
+            
+            # Utilizo una lista para almacenar los DataFrames
+            list_df = [df, pd.DataFrame(datos_fila)]
+            df = pd.concat(list_df)
 
-            df = pd.concat([df,pd.DataFrame(datos_fila)])
+    # Verificar si el DataFrame tiene datos antes de guardarlo
+    if not df.empty:
+        nombre_archivo = re.search(r'/([^/]+)\.\w+$', video_uri).group(1)
+        nombre_archivo_completo = nombre_archivo + "_texto_del_video.csv"
 
-    nombre_archivo = re.search(r'/([^/]+)\.\w+$', video_uri).group(1) 
-    nombre_archivo_completo = nombre_archivo + "_texto_del_video.csv"
+        base_path = re.search(r'videos_online/(.*?)/[^/]+$', video_uri).group(1)
+        base_path_completo = base_path + "/"
 
-   
-    base_path = re.search(r'videos_online/(.*?)/[^/]+$', video_uri).group(1)
-    base_path_completo = base_path + "/"
-   
-    df.to_csv(nombre_archivo_completo, index=False)
-    blob =export_bucket.blob(base_path_completo+nombre_archivo_completo)
-    blob.upload_from_filename(nombre_archivo_completo)
+        df.to_csv(nombre_archivo_completo, index=False)
+        blob = export_bucket.blob(base_path_completo + nombre_archivo_completo)
+        blob.upload_from_filename(nombre_archivo_completo)
+        print("Archivo de texto del video creado y subido correctamente.")
+    else:
+        print("No hay texto del video para grabar.")
+
 
 
 def sorted_by_first_segment_end(

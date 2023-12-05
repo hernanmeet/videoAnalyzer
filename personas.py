@@ -41,11 +41,11 @@ def detect_person(gcs_uri):
     # Retrieve the first result, because a single video was processed.
     annotation_result = result.annotation_results[0]
 
-    columnas = ['confidence', 'name','value']
-    dfAtributos = pd.DataFrame(columns=columnas)
+    columnas_atributos = ['confidence', 'name', 'value']
+    dfAtributos = pd.DataFrame(columns=columnas_atributos)
 
-    columnas = ['confidence', 'name','x','y']
-    dfLandmark = pd.DataFrame(columns=columnas)
+    columnas_landmark = ['confidence', 'name', 'x', 'y']
+    dfLandmark = pd.DataFrame(columns=columnas_landmark)
 
     for annotation in annotation_result.person_detection_annotations:
         print("Person detected:")
@@ -80,8 +80,8 @@ def detect_person(gcs_uri):
                     )
                 )
 
-                datos_fila = {'confidence': [attribute.confidence], 'name': [attribute.name],'value':[attribute.value]}
-                dfAtributos = pd.concat([dfAtributos,pd.DataFrame(datos_fila)])
+                datos_fila_atributos = {'confidence': [attribute.confidence], 'name': [attribute.name], 'value': [attribute.value]}
+                dfAtributos = pd.concat([dfAtributos, pd.DataFrame(datos_fila_atributos)])
 
             # Landmarks in person detection include body parts such as
             # left_shoulder, right_ear, and right_ankle
@@ -90,39 +90,41 @@ def detect_person(gcs_uri):
                 print(
                     "\t{}: {} (x={}, y={})".format(
                         landmark.name,
-                       landmark.confidence,
+                        landmark.confidence,
                         landmark.point.x,  # Normalized vertex
                         landmark.point.y,  # Normalized vertex
                     )
                 )
-                datos_fila = {'confidence': [landmark.confidence], 'name': [landmark.name],'x':[landmark.point.x],'y':[landmark.point.y]}
-                dfLandmark = pd.concat([dfLandmark,pd.DataFrame(datos_fila)])
+                datos_fila_landmark = {'confidence': [landmark.confidence], 'name': [landmark.name], 'x': [landmark.point.x], 'y': [landmark.point.y]}
+                dfLandmark = pd.concat([dfLandmark, pd.DataFrame(datos_fila_landmark)])
 
-    print(dfAtributos)
-    nombre_archivo = re.search(r'/([^/]+)\.\w+$', gcs_uri).group(1) 
-    nombre_archivo_completo = nombre_archivo + "_personas_atributos.csv"
+    if not dfAtributos.empty:
+        nombre_archivo_atributos = re.search(r'/([^/]+)\.\w+$', gcs_uri).group(1)
+        nombre_archivo_completo_atributos = nombre_archivo_atributos + "_personas_atributos.csv"
 
-   
-    base_path = re.search(r'videos_online/(.*?)/[^/]+$', gcs_uri).group(1)
-    base_path_completo = base_path + "/"
+        base_path_atributos = re.search(r'videos_online/(.*?)/[^/]+$', gcs_uri).group(1)
+        base_path_completo_atributos = base_path_atributos + "/"
 
-  
-    dfAtributos.to_csv(nombre_archivo_completo, index=False)
-    blob =export_bucket.blob(base_path_completo+nombre_archivo_completo)
-    blob.upload_from_filename(nombre_archivo_completo)
-    print("-------------")
-    print(dfLandmark)
-    nombre_archivo = re.search(r'/([^/]+)\.\w+$', gcs_uri).group(1) 
-    nombre_archivo_completo = nombre_archivo + "_persons_landmark.csv"
+        dfAtributos.to_csv(nombre_archivo_completo_atributos, index=False)
+        blob_atributos = export_bucket.blob(base_path_completo_atributos + nombre_archivo_completo_atributos)
+        blob_atributos.upload_from_filename(nombre_archivo_completo_atributos)
+        print("Archivo de atributos de personas creado y subido correctamente.")
+    else:
+        print("No hay atributos de personas para grabar.")
 
-   
-    base_path = re.search(r'videos_online/(.*?)/[^/]+$', gcs_uri).group(1)
-    base_path_completo = base_path + "/"
+    if not dfLandmark.empty:
+        nombre_archivo_landmark = re.search(r'/([^/]+)\.\w+$', gcs_uri).group(1)
+        nombre_archivo_completo_landmark = nombre_archivo_landmark + "_persons_landmark.csv"
 
-  
-    dfLandmark.to_csv(nombre_archivo_completo, index=False)
-    blob =export_bucket.blob(base_path_completo+nombre_archivo_completo)
-    blob.upload_from_filename(nombre_archivo_completo)
+        base_path_landmark = re.search(r'videos_online/(.*?)/[^/]+$', gcs_uri).group(1)
+        base_path_completo_landmark = base_path_landmark + "/"
+
+        dfLandmark.to_csv(nombre_archivo_completo_landmark, index=False)
+        blob_landmark = export_bucket.blob(base_path_completo_landmark + nombre_archivo_completo_landmark)
+        blob_landmark.upload_from_filename(nombre_archivo_completo_landmark)
+        print("Archivo de landmarks de personas creado y subido correctamente.")
+    else:
+        print("No hay landmarks de personas para grabar.")
 
     
     

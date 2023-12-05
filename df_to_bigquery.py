@@ -9,10 +9,15 @@ from google.oauth2 import service_account
 from pandas_gbq import to_gbq
 import re
 
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'vertexai-403121-4e2613b93cf2.json'
+credentials = service_account.Credentials.from_service_account_file('vertexai-403121-4e2613b93cf2.json')
+
 def df_to_bigquery(carpeta_en_bucket):
 
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'vertexai-403121-4e2613b93cf2.json'
-    credentials = service_account.Credentials.from_service_account_file('vertexai-403121-4e2613b93cf2.json')
+    # base_path = re.search(r'videos_online/(.*?)/[^/]+$', video_uri).group(1)
+    # base_path_completo = base_path + "/"
+    # carpeta_en_bucket = base_path_completo
+
     client = bigquery.Client()
     project_id = client.project
 
@@ -95,7 +100,7 @@ def df_to_bigquery(carpeta_en_bucket):
     to_gbq(data, f'{project_id}.{dataset_name}.{table_name_data}', if_exists='append', credentials=credentials)
 
 
-df_to_bigquery('2023/JetSmart/Videos/Tanda_2/')
+#df_to_bigquery('2023/JetSmart/Videos/Tanda_2/')
 
 
 

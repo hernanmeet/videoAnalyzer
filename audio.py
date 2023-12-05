@@ -61,24 +61,29 @@ def print_video_speech(results: vi.VideoAnnotationResults, video_uri, min_confid
         confidence = first_alternative.confidence
         transcript = first_alternative.transcript
         print(f" {confidence:4.0%} | {transcript.strip()}")
+        
         # Crear un diccionario con los datos de la iteración actual
         datos_fila = {'confidence': [confidence], 'transcript': [transcript.strip()]}
 
         # Agregar una nueva fila al DataFrame
-        df = pd.concat([df,pd.DataFrame(datos_fila)])
+        # Utilizo una lista para almacenar los DataFrames
+        list_df = [df, pd.DataFrame(datos_fila)]
+        df = pd.concat(list_df)
 
-    
-    nombre_archivo = re.search(r'/([^/]+)\.\w+$', video_uri).group(1) 
-    nombre_archivo_completo = nombre_archivo + "_audio_en_una_linea.csv"
+    # Verificar si el DataFrame tiene datos antes de guardarlo
+    if not df.empty:
+        nombre_archivo = re.search(r'/([^/]+)\.\w+$', video_uri).group(1) 
+        nombre_archivo_completo = nombre_archivo + "_audio_en_una_linea.csv"
 
-   
-    base_path = re.search(r'videos_online/(.*?)/[^/]+$', video_uri).group(1)
-    base_path_completo = base_path + "/"
+        base_path = re.search(r'videos_online/(.*?)/[^/]+$', video_uri).group(1)
+        base_path_completo = base_path + "/"
 
-  
-    df.to_csv(nombre_archivo_completo, index=False)
-    blob =export_bucket.blob(base_path_completo+nombre_archivo_completo)
-    blob.upload_from_filename(nombre_archivo_completo)
+        df.to_csv(nombre_archivo_completo, index=False)
+        blob = export_bucket.blob(base_path_completo + nombre_archivo_completo)
+        blob.upload_from_filename(nombre_archivo_completo)
+        print("Archivo de audio en una línea creado y subido correctamente.")
+    else:
+        print("No hay transcripciones de audio para grabar.")
 
 
 def print_word_timestamps(
@@ -92,35 +97,39 @@ def print_word_timestamps(
     transcriptions = results.speech_transcriptions
     transcriptions = [t for t in transcriptions if keep_transcription(t)]
 
-    columnas = ['confidence', 't_inicio','t_fin', 'palabra']
+    columnas = ['confidence', 't_inicio', 't_fin', 'palabra']
     df = pd.DataFrame(columns=columnas)
 
     print(" Word timestamps ".center(80, "-"))
     for transcription in transcriptions:
         first_alternative = transcription.alternatives[0]
         confidence = first_alternative.confidence
-        for word in first_alternative.words:
-            t1 = word.start_time.total_seconds()
-            t2 = word.end_time.total_seconds()
-            word = word.word
+        for word_info in first_alternative.words:
+            t1 = word_info.start_time.total_seconds()
+            t2 = word_info.end_time.total_seconds()
+            word = word_info.word
             print(f"{confidence:4.0%} | {t1:7.3f} | {t2:7.3f} | {word}")
 
-            datos_fila = {'confidence': [confidence], 't_inicio': [t1],'t_fin':[t2], 'palabra':[word]}
+            datos_fila = {'confidence': [confidence], 't_inicio': [t1], 't_fin': [t2], 'palabra': [word]}
 
-            df = pd.concat([df,pd.DataFrame(datos_fila)])
-    
+            # Utilizar una lista para almacenar los DataFrames
+            list_df = [df, pd.DataFrame(datos_fila)]
+            df = pd.concat(list_df)
 
-    nombre_archivo = re.search(r'/([^/]+)\.\w+$', video_uri).group(1) 
-    nombre_archivo_completo = nombre_archivo + "_audio_con_timestamp.csv"
+    # Verificar si el DataFrame tiene datos antes de guardarlo
+    if not df.empty:
+        nombre_archivo = re.search(r'/([^/]+)\.\w+$', video_uri).group(1)
+        nombre_archivo_completo = nombre_archivo + "_audio_con_timestamp.csv"
 
-   
-    base_path = re.search(r'videos_online/(.*?)/[^/]+$', video_uri).group(1)
-    base_path_completo = base_path + "/"
-   
-    df.to_csv(nombre_archivo_completo, index=False)
-    blob =export_bucket.blob(base_path_completo+nombre_archivo_completo)
-    blob.upload_from_filename(nombre_archivo_completo)
+        base_path = re.search(r'videos_online/(.*?)/[^/]+$', video_uri).group(1)
+        base_path_completo = base_path + "/"
 
+        df.to_csv(nombre_archivo_completo, index=False)
+        blob = export_bucket.blob(base_path_completo + nombre_archivo_completo)
+        blob.upload_from_filename(nombre_archivo_completo)
+        print("Archivo de audio con timestamp creado y subido correctamente.")
+    else:
+        print("No hay datos de palabras con timestamp para grabar.")
 
 #-----------------
 

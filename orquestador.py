@@ -11,6 +11,7 @@ from imagen_landmark import captar_imagen_landmark
 from imagen_caras import captar_imagen_caras
 from imagen_textos import captar_imagen_textos
 from Report_generator import generar_informe
+from df_to_bigquery import df_to_bigquery
 import time
 import redis
 
@@ -54,7 +55,8 @@ async def procesar(archivo):
     if archivo.get('imagen_textos') == 'true':
         captar_imagen_textos(path_google)
 
-    generar_informe(path_google)
+    #generar_informe(path_google)
+    #df_to_bigquery(path_google)
 
     print("---------- FIN DEL ANALISIS -----------")
     ocupado = False

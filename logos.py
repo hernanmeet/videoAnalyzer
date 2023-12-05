@@ -36,11 +36,11 @@ def detect_logos(
     return results
 
 
-def print_detected_logos(results: vi.VideoAnnotationResults,video_uri):
+def print_detected_logos(results: vi.VideoAnnotationResults, video_uri):
     annotations = results.logo_recognition_annotations
 
-    columnas = ['confidence', 't_inicio','t_fin','cant_frames', 'id_entidad','entidad']
-    df = pd.DataFrame(columns=columnas)
+    columnas = ['confidence', 't_inicio', 't_fin', 'cant_frames', 'id_entidad', 'entidad']
+    frames = []
 
     print(f" Detected logos: {len(annotations)} ".center(80, "-"))
     for annotation in annotations:
@@ -61,20 +61,25 @@ def print_detected_logos(results: vi.VideoAnnotationResults,video_uri):
                 f"{description}",
                 sep=" | ",
             )
-            datos_fila = {'confidence': [confidence], 't_inicio': [t1],'t_fin':[t2], 'cant_frames':[logo_frames],'id_entidad':[entity_id],'entidad':[description]}
+            datos_fila = {'confidence': confidence, 't_inicio': t1, 't_fin': t2, 'cant_frames': logo_frames,
+                          'id_entidad': entity_id, 'entidad': description}
 
-            df = pd.concat([df,pd.DataFrame(datos_fila)])
-    
-    nombre_archivo = re.search(r'/([^/]+)\.\w+$', video_uri).group(1) 
-    nombre_archivo_completo = nombre_archivo + "_logos.csv"
+            frames.append(pd.DataFrame([datos_fila]))
 
-   
-    base_path = re.search(r'videos_online/(.*?)/[^/]+$', video_uri).group(1)
-    base_path_completo = base_path + "/"
-   
-    df.to_csv(nombre_archivo_completo, index=False)
-    blob =export_bucket.blob(base_path_completo+nombre_archivo_completo)
-    blob.upload_from_filename(nombre_archivo_completo)
+    if frames:
+        df = pd.concat(frames, ignore_index=True)
+        nombre_archivo = re.search(r'/([^/]+)\.\w+$', video_uri).group(1)
+        nombre_archivo_completo = nombre_archivo + "_logos.csv"
+
+        base_path = re.search(r'videos_online/(.*?)/[^/]+$', video_uri).group(1)
+        base_path_completo = base_path + "/"
+
+        df.to_csv(nombre_archivo_completo, index=False)
+        blob = export_bucket.blob(base_path_completo + nombre_archivo_completo)
+        blob.upload_from_filename(nombre_archivo_completo)
+        print("Archivo de logos creado y subido correctamente.")
+    else:
+        print("No hay logos para grabar.")
 
 def captar_logos(archivo):
     print ("---------- Iniciando Lectura de Logos ----------")
