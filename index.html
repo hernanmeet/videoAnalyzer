@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Analyzer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="container">
+    <div id="left-column">
+      <label for="year">Año:</label>
+      <select id="year" onchange="cargarCompañias()"></select>
+
+      <label for="company">Empresa:</label>
+      <select id="company" onchange="cargarCampañas()"></select>
+
+      <label for="campaign">Campaña:</label>
+      <select id="campaign" onchange="cargarVideos(); cargarImagenes(); actualizarRuta()"></select>
+
+      <button onclick="agregarCampaña()" class="custom-file-upload">Agregar Campaña</button>
+      <hr>
+      <h3>Analisis de Video:</h3>
+      <hr class="divider">
+
+      <label>Etiquetas<input type="checkbox" id="etiquetasCheckbox"></label>
+      <label>Logos<input type="checkbox" id="logosCheckbox"></label>  
+      <label>Personas<input type="checkbox" id="personasCheckbox"></label>
+      <label>Textos<input type="checkbox" id="textosCheckbox"></label>
+      <label>Audio<input type="checkbox" id="audioCheckbox"></label>
+      <label>textospeech<input type="checkbox" id="textospeechCheckbox"></label>
+
+      <hr>
+      <h3>Analisis de Imagenes:</h3>
+      <hr class="divider">
+
+      <label>Imagen_Etiquetas<input type="checkbox" id="imagen_etiquetasCheckbox"></label>
+      <label>Imagen_LandMark<input type="checkbox" id="imagen_landmarkCheckbox"></label>  
+      <label>Imagen_Caras<input type="checkbox" id="imagen_carasCheckbox"></label>
+      <label>Imagen_Textos<input type="checkbox" id="imagen_textosCheckbox"></label>
+
+
+      
+    </div>
+
+    <div id="right-column">
+      <div> <span id="ruta-seleccionada"></span></div>
+
+      <div class="media-column">
+        <div class="media-container">
+          <h2>Videos</h2>
+          <div class="media-interior">
+            <ul id="video-list">
+              <!-- Aquí puedes agregar elementos de la lista de videos -->
+              <li>Video 1</li>
+              <li>Video 2</li>
+              <li>Video 3</li>
+            </ul>
+          </div>
+          <label for="videoFileInput" class="custom-file-upload">
+            Subir Video
+          </label>
+          <input type="file" accept="video/*" id="videoFileInput" onchange="agregarVideo(event)" style="display:none;">
+          <div id="video-container"></div>
+        </div>
+
+        <div class="media-container">
+          <h2>Imágenes</h2>
+          <div class="media-interior">
+            <ul id="image-list">
+              <!-- Aquí puedes agregar elementos de la lista de imágenes -->
+              <li>Imagen 1</li>
+              <li>Imagen 2</li>
+              <li>Imagen 3</li>
+            </ul>
+          </div>
+          <label for="ImagenFileInput" class="custom-file-upload">
+            Subir Imagen
+          </label>
+          <input type="file" accept="image/*" id="ImagenFileInput" onchange="agregarImagen(event)" style="display:none;">
+          
+          <div id="image-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Agrega el botón de cierre en el HTML, pero inicialmente lo ocultamos -->
+<div id="myModal" class="modal" style="display: none;">
+  <span class="close" id="modal-close">&times;</span>
+  <p id="modal-message"></p>
+</div>
+
+  <script src="app.js"></script>
+</body>
+</html>

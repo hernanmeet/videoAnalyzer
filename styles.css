@@ -1,0 +1,112 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+  }
+  
+  #container {
+    display: flex;
+    width: 100%;
+  }
+  
+  #left-column, #right-column {
+    padding: 20px;
+    border: 1px solid #ccc;
+  }
+
+  #left-column select {
+    margin-bottom: 10px; /* Ajuste del espaciado entre los elementos select */
+  }
+
+  #left-column button {
+    margin-bottom: 10px; /* Ajuste del espaciado entre los elementos select */
+  }
+
+  #left-column {
+    flex: 0.3; /* Ajuste del ancho al 30% */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #right-column {
+    flex: 0.7; /* La columna derecha ocupará el 70% restante */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .media-column {
+    display: flex;
+  }
+  
+  .media-container {
+    flex: 0.5; /* Cada columna de medios ocupa el 50% del espacio disponible */
+    border: 1px solid black;
+    padding: 10px;
+    margin: 10px;
+  }
+  
+.media-interior {
+    border: 1px solid black;
+    padding: 10px;
+    margin: 10px;
+}
+
+.custom-file-upload {
+  border: 1px solid #ccc;
+  display: inline-block;
+  padding: 6px 12px;
+  cursor: pointer;
+  background-color: #f8f8f8;
+}
+
+/* Agrega un estilo a la línea horizontal */
+hr.divider {
+  margin: 5px 0px; /* Ajusta el margen para separar los elementos */
+  border: none;
+  height: 2px;
+  background-color: #ccc; /* Color de la línea */
+}
+
+h3 {
+  margin: 2px; /* Ajusta el margen superior del encabezado */
+}
+
+/* Estilos para el modal */
+.modal {
+  display: none; /* Por defecto, oculto */
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  margin: 10px; /* Ajusta el margen para que no esté pegado al borde */
+  background-color: rgba(0, 0, 0, 0.8); /* Fondo negro con opacidad */
+  color: white;
+  padding: 10px;
+  width: 250px;
+  text-align: center;
+  border-radius: 10px;
+}
+
+.modal-content {
+  background-color: #fefefe;
+  padding: 10px;
+  border: 1px solid #888;
+  max-width: 500px;
+}
+
+/* Botón para cerrar el modal */
+.close {
+  color: #e9e3e3;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+} 
+
