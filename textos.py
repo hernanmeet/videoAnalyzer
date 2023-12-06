@@ -65,9 +65,12 @@ def print_video_text(results: vi.VideoAnnotationResults, video_uri, min_frames: 
             datos_fila = {'confidence': [confidence], 'text': [text], 't_inicio': [start],
                           'cantidad_segundos': [seconds], 'frames': [frames]}
             
-            # Utilizo una lista para almacenar los DataFrames
-            list_df = [df, pd.DataFrame(datos_fila)]
-            df = pd.concat(list_df)
+           
+            if (df.empty):
+                df= pd.DataFrame(datos_fila).copy()
+            else:
+                list_df = [df, pd.DataFrame(datos_fila)]
+                df = pd.concat(list_df)
 
     # Verificar si el DataFrame tiene datos antes de guardarlo
     if not df.empty:
@@ -76,6 +79,12 @@ def print_video_text(results: vi.VideoAnnotationResults, video_uri, min_frames: 
 
         base_path = re.search(r'videos_online/(.*?)/[^/]+$', video_uri).group(1)
         base_path_completo = base_path + "/"
+
+        # Utiliza dropna para eliminar las filas con valores nulos antes de concatenar
+        # list_df = [df.dropna(), pd.DataFrame(datos_fila)]
+        # df = pd.concat(list_df)
+
+        
 
         df.to_csv(nombre_archivo_completo, index=False)
         blob = export_bucket.blob(base_path_completo + nombre_archivo_completo)

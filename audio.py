@@ -66,10 +66,12 @@ def print_video_speech(results: vi.VideoAnnotationResults, video_uri, min_confid
         datos_fila = {'confidence': [confidence], 'transcript': [transcript.strip()]}
 
         # Agregar una nueva fila al DataFrame
-        # Utilizo una lista para almacenar los DataFrames
-        list_df = [df, pd.DataFrame(datos_fila)]
-        df = pd.concat(list_df)
-
+        # Utilizar una lista para almacenar los DataFrames
+        if (df.empty):
+            df= pd.DataFrame(datos_fila).copy()
+        else:
+            list_df = [df, pd.DataFrame(datos_fila)]
+            df = pd.concat(list_df)
     # Verificar si el DataFrame tiene datos antes de guardarlo
     if not df.empty:
         nombre_archivo = re.search(r'/([^/]+)\.\w+$', video_uri).group(1) 
@@ -113,8 +115,11 @@ def print_word_timestamps(
             datos_fila = {'confidence': [confidence], 't_inicio': [t1], 't_fin': [t2], 'palabra': [word]}
 
             # Utilizar una lista para almacenar los DataFrames
-            list_df = [df, pd.DataFrame(datos_fila)]
-            df = pd.concat(list_df)
+            if (df.empty):
+                df= pd.DataFrame(datos_fila).copy()
+            else:
+                list_df = [df, pd.DataFrame(datos_fila)]
+                df = pd.concat(list_df)
 
     # Verificar si el DataFrame tiene datos antes de guardarlo
     if not df.empty:

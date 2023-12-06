@@ -290,7 +290,8 @@ def create_apariciones_table(blobs_list, carpeta_en_bucket, cliente):
         if 'logo' in blob.name.lower() and blob.name.lower().endswith('.csv'):
             contenido_csv_bytes = blob.download_as_bytes()
             df = pd.read_csv(BytesIO(contenido_csv_bytes))
-            mercado_libre_data = df[df['entidad'] == cliente]
+            cliente_lower = cliente.lower()
+            mercado_libre_data = df[df['entidad'].str.lower() == cliente_lower]
 
             for index, row in mercado_libre_data.iterrows():
                 tiempo_aparicion_segundos = row['t_inicio']

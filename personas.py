@@ -81,7 +81,12 @@ def detect_person(gcs_uri):
                 )
 
                 datos_fila_atributos = {'confidence': [attribute.confidence], 'name': [attribute.name], 'value': [attribute.value]}
-                dfAtributos = pd.concat([dfAtributos, pd.DataFrame(datos_fila_atributos)])
+                #dfAtributos = pd.concat([dfAtributos, pd.DataFrame(datos_fila_atributos)])
+                if (dfAtributos.empty):
+                    dfAtributos= pd.DataFrame(datos_fila_atributos).copy()
+                else:
+                    list_df = [dfAtributos, pd.DataFrame(datos_fila_atributos)]
+                    dfAtributos = pd.concat(list_df)
 
             # Landmarks in person detection include body parts such as
             # left_shoulder, right_ear, and right_ankle
@@ -96,7 +101,12 @@ def detect_person(gcs_uri):
                     )
                 )
                 datos_fila_landmark = {'confidence': [landmark.confidence], 'name': [landmark.name], 'x': [landmark.point.x], 'y': [landmark.point.y]}
-                dfLandmark = pd.concat([dfLandmark, pd.DataFrame(datos_fila_landmark)])
+                #dfLandmark = pd.concat([dfLandmark, pd.DataFrame(datos_fila_landmark)])
+                if (dfLandmark.empty):
+                    dfLandmark= pd.DataFrame(datos_fila_landmark).copy()
+                else:
+                    list_df = [dfLandmark, pd.DataFrame(datos_fila_landmark)]
+                    dfLandmark = pd.concat(list_df)
 
     if not dfAtributos.empty:
         nombre_archivo_atributos = re.search(r'/([^/]+)\.\w+$', gcs_uri).group(1)
