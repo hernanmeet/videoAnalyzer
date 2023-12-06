@@ -14,9 +14,12 @@ credentials = service_account.Credentials.from_service_account_file('vertexai-40
 
 def df_to_bigquery(carpeta_en_bucket):
 
-    # base_path = re.search(r'videos_online/(.*?)/[^/]+$', video_uri).group(1)
-    # base_path_completo = base_path + "/"
-    # carpeta_en_bucket = base_path_completo
+
+    # Dividir la cadena por "/"
+    parts = carpeta_en_bucket.split("/")
+    # Seleccionar las partes que deseas a partir de la tercera posición en adelante
+    carpeta_en_bucket = "/".join(parts[3:-1])+"/"
+    print( "Carpeta en Bucket: ",carpeta_en_bucket)
 
     client = bigquery.Client()
     project_id = client.project
@@ -27,9 +30,11 @@ def df_to_bigquery(carpeta_en_bucket):
     bucket = client_storage.get_bucket(bucket_name)
     # Obtener una lista de blobs en el bucket con la ruta de la carpeta especificada
     blobs_list = list(bucket.list_blobs(prefix=carpeta_en_bucket))
-
-    cliente_match = re.match(r'^2023\/([^\/]+)\/Videos\/', carpeta_en_bucket)
+    
+    cliente_match = match = re.search(r'\d+/(.*?)/Videos', carpeta_en_bucket)
     cliente = cliente_match.group(1) if cliente_match else None
+
+    print ("Cliente: ",cliente)
     
 
     data, informe_texto = df_logo(blobs_list,carpeta_en_bucket,cliente)
@@ -81,9 +86,22 @@ def df_to_bigquery(carpeta_en_bucket):
         'timestamp': 'timestamp'
     }, inplace=True)
 
-    data['Contador_de_apariciones'] = pd.to_numeric(data['Contador_de_apariciones'], errors='coerce', downcast='integer')
-    data['Primera_aparicion'] = pd.to_datetime(data['Primera_aparicion'], format='%M:%S').dt.time
-    apariciones['Tiempo_aparicion'] = pd.to_datetime(apariciones['Tiempo_aparicion'], format='%M:%S').dt.time
+    # data['Contador_de_apariciones'] = pd.to_numeric(data['Contador_de_apariciones'], errors='coerce', downcast='integer')
+    # data['Primera_aparicion'] = pd.to_datetime(data['Primera_aparicion'], format='%M:%S').dt.time
+
+    # Verifica si el DataFrame tiene datos antes de realizar operaciones adicionales
+    if not data.empty:
+        data['Contador_de_apariciones'] = pd.to_numeric(data['Contador_de_apariciones'], errors='coerce', downcast='integer')
+        data['Primera_aparicion'] = pd.to_datetime(data['Primera_aparicion'], format='%M:%S').dt.time
+    else:
+        print("El DataFrame 'data' está vacío. Verifica la obtención de datos antes de realizar conversiones.")
+
+    #apariciones['Tiempo_aparicion'] = pd.to_datetime(apariciones['Tiempo_aparicion'], format='%M:%S').dt.time
+    # Verifica si el DataFrame tiene datos antes de realizar operaciones adicionales
+    if not apariciones.empty:
+        apariciones['Tiempo_aparicion'] = pd.to_datetime(apariciones['Tiempo_aparicion'], format='%M:%S').dt.time
+    else:
+        print("El DataFrame 'apariciones' está vacío. Verifica la función create_apariciones_table.")
 
 
 
@@ -100,7 +118,7 @@ def df_to_bigquery(carpeta_en_bucket):
     to_gbq(data, f'{project_id}.{dataset_name}.{table_name_data}', if_exists='append', credentials=credentials)
 
 
-#df_to_bigquery('2023/JetSmart/Videos/Tanda_2/')
+#df_to_bigquery('2023/Didi/Videos/Caito')
 
 
 

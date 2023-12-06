@@ -56,7 +56,7 @@ async def procesar(archivo):
         captar_imagen_textos(path_google)
 
     #generar_informe(path_google)
-    #df_to_bigquery(path_google)
+    df_to_bigquery(path_google)
 
     print("---------- FIN DEL ANALISIS -----------")
     ocupado = False
