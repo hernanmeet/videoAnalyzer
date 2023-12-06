@@ -14,10 +14,20 @@ import re
 
 
 
-def generar_informe( carpeta_en_bucket):
+def generar_informe(carpeta_en_bucket):
+
+    nombre_archivo = re.search(r'/([^/]+)\.\w+$', carpeta_en_bucket).group(1)
+    nombre_archivo_completo = nombre_archivo + "_informe.pdf"
+   
+    base_path = re.search(r'videos_online/(.*?)/[^/]+$', carpeta_en_bucket).group(1)
+    base_path_completo = base_path + "/"
+
     bucket_name = 'videos_online'
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'vertexai-403121-4e2613b93cf2.json'  
  
+    parts = carpeta_en_bucket.split("/")
+    # Seleccionar las partes que deseas a partir de la tercera posición en adelante
+    carpeta_en_bucket = "/".join(parts[3:-1])+"/"
 
     # Crear una instancia del cliente de almacenamiento de Google Cloud
     client = storage.Client()
@@ -28,7 +38,7 @@ def generar_informe( carpeta_en_bucket):
     # Obtener una lista de blobs en el bucket con la ruta de la carpeta especificada
     blobs_list = list(bucket.list_blobs(prefix=carpeta_en_bucket))
 
-    cliente_match = re.match(r'^2023\/([^\/]+)\/Videos\/', carpeta_en_bucket)
+    cliente_match = match = re.search(r'\d+/(.*?)/Videos', carpeta_en_bucket)
     cliente = cliente_match.group(1) if cliente_match else None
 
     styles = getSampleStyleSheet()
@@ -70,12 +80,8 @@ def generar_informe( carpeta_en_bucket):
     content.append(Paragraph("<b>Análisis de Audio Contexto</b>", title_style))
     content.extend(content_audio_contexto)
 
-    nombre_archivo = re.search(r'/([^/]+)\.\w+$', carpeta_en_bucket).group(1) 
-    nombre_archivo_completo = nombre_archivo + "_informe.pdf"
 
-   
-    base_path = re.search(r'videos_online/(.*?)/[^/]+$', carpeta_en_bucket).group(1)
-    base_path_completo = base_path + "/"
+
 
 
     doc = SimpleDocTemplate(nombre_archivo_completo, pagesize=letter)    

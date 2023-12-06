@@ -40,7 +40,9 @@ def analyze_logo(blobs_list,carpeta_en_bucket,cliente):
         if 'logo' in blob.name.lower() and blob.name.lower().endswith('.csv'):
             contenido_csv_bytes = blob.download_as_bytes()
             df = pd.read_csv(BytesIO(contenido_csv_bytes))
-            mercado_libre_data = df[df['entidad'] == cliente]
+            #mercado_libre_data = df[df['entidad'] == cliente]
+            cliente_lower = cliente.lower()
+            mercado_libre_data = df[df['entidad'].str.lower() == cliente_lower]
 
             aparece_logo = 'No'
             aparece_antes_3s = 'No'
@@ -165,7 +167,9 @@ def logo_bar_chart(blobs_list,cliente):
             df = pd.read_csv(BytesIO(contenido_csv_bytes))
 
             # Filtrar por entidad 'MercadoLibre'
-            mercado_libre_data = df[df['entidad'] == cliente]
+            #mercado_libre_data = df[df['entidad'] == cliente]
+            cliente_lower = cliente.lower()
+            mercado_libre_data = df[df['entidad'].str.lower() == cliente_lower]
 
             # Obtener el nombre del archivo sin la extensión
             nombre_archivo = blob.name.split('/')[-1].split('.')[0]
@@ -219,7 +223,9 @@ def df_logo(blobs_list, carpeta_en_bucket,cliente):
         if 'logo' in blob.name.lower() and blob.name.lower().endswith('.csv'):
             contenido_csv_bytes = blob.download_as_bytes()
             df = pd.read_csv(BytesIO(contenido_csv_bytes))
-            mercado_libre_data = df[df['entidad'] == cliente]
+            #mercado_libre_data = df[df['entidad'] == cliente]
+            cliente_lower = cliente.lower()
+            mercado_libre_data = df[df['entidad'].str.lower() == cliente_lower]
 
             aparece_logo = 'No'
             aparece_antes_3s = 'No'
