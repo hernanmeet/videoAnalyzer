@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 
+urlServer = 'redis'
 
 // Obtenemos las credenciales del archivo JSON
 const credentials = require('./vertexai-403121-4e2613b93cf2.json');
@@ -84,7 +85,9 @@ function getContentType(filePath) {
 }
 
 app.post('/api/files/upload', upload.single('file'), async (req, res) => {
-  const client = createClient();
+  const client = createClient({
+    url: 'redis://redis:6379'
+    });
 
   try {
     const fileBuffer = req.file.buffer;
@@ -138,78 +141,37 @@ app.post('/api/files/createFolder', async (req, res) => {
   }
 });
 
-
-
 // Función para inicializar las llaves en Redis
 async function initializeKeys() {
-  const client = createClient();
+  const client = createClient({
+    url: 'redis://redis:6379'
+    });
 
   try {
+    // Esperar a que el servidor de Redis esté disponible
+    await waitForRedis();
+
     // Conectar al servidor de Redis
     await client.connect();
-    // Verificar y establecer la llave 'TERMINO'
-    const terminoExists = await client.exists('TERMINO');
-    if (!terminoExists) {
-      await client.set('TERMINO', 'False');
-    }
 
-    // Verificar y establecer la llave 'ETIQUETAS'
-    const etiquetasExists = await client.exists('ETIQUETAS');
-    if (!etiquetasExists) {
-      await client.set('ETIQUETAS', 'False');
-    }
+    // Verificar y establecer las llaves
+    await initializeKeyIfNotExists(client, 'TERMINO', 'False');
+    await initializeKeyIfNotExists(client, 'ETIQUETAS', 'False');
 
-    // Verificar y establecer la llave 'LOGOS'
-    const logosExists = await client.exists('LOGOS');
-    if (!logosExists) {
-      await client.set('LOGOS', 'False');
-    }
+    await initializeKeyIfNotExists(client, 'LOGOS', 'False');
+    await initializeKeyIfNotExists(client, 'PERSONAS', 'False');
+    
+    await initializeKeyIfNotExists(client, 'TEXTOS', 'False');
 
-    // Verificar y establecer la llave 'PERSONAS'
-    const personasExists = await client.exists('PERSONAS');
-    if (!personasExists) {
-      await client.set('PERSONAS', 'False');
-    }
+    await initializeKeyIfNotExists(client, 'AUDIO', 'False');
+    await initializeKeyIfNotExists(client, 'TEXTOSPEECH', 'False');
+    await initializeKeyIfNotExists(client, 'IMAGEN_ETIQUETAS', 'False');
+    await initializeKeyIfNotExists(client, 'IMAGEN_LANDMARK', 'False');
+    await initializeKeyIfNotExists(client, 'IMAGEN_CARAS', 'False');
+    await initializeKeyIfNotExists(client, 'IMAGEN_TEXTOS', 'False');
 
-    // Verificar y establecer la llave 'TEXTOS'
-    const textosExists = await client.exists('TEXTOS');
-    if (!textosExists) {
-      await client.set('TEXTOS', 'False');
-    }
 
-    // Verificar y establecer la llave 'AUDIO'
-    const audioExists = await client.exists('AUDIO');
-    if (!audioExists) {
-      await client.set('AUDIO', 'False');
-    }
-
-    // Verificar y establecer la llave 'TEXTOSPEECH'
-    const textospeechExists = await client.exists('TEXTOSPEECH');
-    if (!textospeechExists) {
-      await client.set('TEXTOSPEECH', 'False');
-    }
-
-    // Nuevas claves para checkboxes de imágenes
-    const imagenEtiquetasExists = await client.exists('IMAGEN_ETIQUETAS');
-    if (!imagenEtiquetasExists) {
-      await client.set('IMAGEN_ETIQUETAS', 'False');
-    }
-
-    const imagenLandmarkExists = await client.exists('IMAGEN_LANDMARK');
-    if (!imagenLandmarkExists) {
-      await client.set('IMAGEN_LANDMARK', 'False');
-    }
-
-    const imagenCarasExists = await client.exists('IMAGEN_CARAS');
-    if (!imagenCarasExists) {
-      await client.set('IMAGEN_CARAS', 'False');
-    }
-
-    const imagenTextosExists = await client.exists('IMAGEN_TEXTOS');
-    if (!imagenTextosExists) {
-      await client.set('IMAGEN_TEXTOS', 'False');
-    }
-
+    console.log('Llaves inicializadas correctamente en Redis');
   } catch (error) {
     console.error('Error al inicializar las llaves en Redis:', error);
   } finally {
@@ -218,12 +180,44 @@ async function initializeKeys() {
   }
 }
 
+// Función para esperar a que el servidor de Redis esté disponible
+async function waitForRedis() {
+  return new Promise((resolve) => {
+    const checkConnection = async () => {
+      try {
+        const pingResult = await client.ping();
+        if (pingResult === 'PONG') {
+          resolve();
+        } else {
+          setTimeout(checkConnection, 1000); // Intentar nuevamente después de 1 segundo
+        }
+      } catch (error) {
+        setTimeout(checkConnection, 1000); // Intentar nuevamente después de 1 segundo
+      }
+    };
+
+    checkConnection();
+  });
+}
+
+// Función para inicializar una llave si no existe
+async function initializeKeyIfNotExists(client, key, value) {
+  const keyExists = await client.exists(key);
+  if (!keyExists) {
+    await client.set(key, value);
+    console.log(`Llave '${key}' inicializada con valor '${value}'`);
+  }
+}
+
 
 app.use(bodyParser.json());
 
 //Recibe el parametro de los checkbox
 app.post('/api/configuracion', async (req, res) => {
-  const client = createClient();
+  const client = createClient({
+    url: 'redis://redis:6379'
+    });
+
   try {
     // Conectar al servidor de Redis
     await client.connect();

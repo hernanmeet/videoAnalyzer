@@ -1,0 +1,15 @@
+FROM node:18
+
+WORKDIR /app
+
+COPY package*.json /app/
+RUN npm install
+
+COPY vertexai-403121-4e2613b93cf2.json /app/
+COPY . /app/
+
+# Copia el archivo de configuración de Nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 3000
+CMD ["node", "server.js"]

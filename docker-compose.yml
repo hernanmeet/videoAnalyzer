@@ -1,0 +1,30 @@
+version: '3.7'
+
+services:
+  redis:
+    image: redis
+   
+  backend:
+    build:
+      context: .
+      dockerfile: dockerfile-backend
+    ports:
+      - "3000:3000"
+    
+ 
+  web:
+    build:
+      context: .
+      dockerfile: dockerfile-frontend
+    ports:
+      - "80:80"
+  
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Monta el archivo de configuración de Nginx en modo de solo lectura
+
+  orquestador:
+    build:
+      context: .
+      dockerfile: dockerfile-orquestador
+    depends_on:
+      - backend  # Asegura que el servicio backend esté en ejecución antes de iniciar el orquestador

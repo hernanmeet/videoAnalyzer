@@ -15,7 +15,7 @@ from df_to_bigquery import df_to_bigquery
 import time
 import redis
 
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+redis_client = redis.StrictRedis(host='redis', port=6379, db=0)
 
 lista = []
 ocupado = False
@@ -63,34 +63,42 @@ async def procesar(archivo):
 
 async def procesar_archivos():
     global lista, ocupado
-
+    print("Aplicación iniciada")
+    
     while True:
-        estado = redis_client.get('TERMINO').decode('utf-8')
-        time.sleep(1)
+        try:
+            estado = redis_client.get('TERMINO').decode('utf-8')
+            time.sleep(1)
 
-        if estado == 'True':
-            print("---------------- Iniciando Analisis -----------------")
-            datos = {
-                'path_google': redis_client.get('PATH_GOOGLE').decode('utf-8'),
-                'etiquetas': redis_client.get('ETIQUETAS').decode('utf-8'),
-                'logos': redis_client.get('LOGOS').decode('utf-8'),
-                'personas': redis_client.get('PERSONAS').decode('utf-8'),
-                'textos': redis_client.get('TEXTOS').decode('utf-8'),
-                'audio': redis_client.get('AUDIO').decode('utf-8'),
-                'textospeech': redis_client.get('TEXTOSPEECH').decode('utf-8'),
-                'imagen_etiquetas': redis_client.get('IMAGEN_ETIQUETAS').decode('utf-8'),
-                'imagen_landmark': redis_client.get('IMAGEN_LANDMARK').decode('utf-8'),
-                'imagen_caras': redis_client.get('IMAGEN_CARAS').decode('utf-8'),
-                'imagen_textos': redis_client.get('IMAGEN_TEXTOS').decode('utf-8'),
-            }
+            if estado == 'True':
+                print("---------------- Iniciando Analisis -----------------")
+                datos = {
+                    'path_google': redis_client.get('PATH_GOOGLE').decode('utf-8'),
+                    'etiquetas': redis_client.get('ETIQUETAS').decode('utf-8'),
+                    'logos': redis_client.get('LOGOS').decode('utf-8'),
+                    'personas': redis_client.get('PERSONAS').decode('utf-8'),
+                    'textos': redis_client.get('TEXTOS').decode('utf-8'),
+                    'audio': redis_client.get('AUDIO').decode('utf-8'),
+                    'textospeech': redis_client.get('TEXTOSPEECH').decode('utf-8'),
+                    'imagen_etiquetas': redis_client.get('IMAGEN_ETIQUETAS').decode('utf-8'),
+                    'imagen_landmark': redis_client.get('IMAGEN_LANDMARK').decode('utf-8'),
+                    'imagen_caras': redis_client.get('IMAGEN_CARAS').decode('utf-8'),
+                    'imagen_textos': redis_client.get('IMAGEN_TEXTOS').decode('utf-8'),
+                }
 
-            lista.append(datos)
-            redis_client.set('TERMINO', 'False')
+                lista.append(datos)
+                redis_client.set('TERMINO', 'False')
 
-        if lista and not ocupado:
-            ocupado = True
-            await asyncio.gather(procesar(lista[0]))
-            lista.pop(0)
+            if lista and not ocupado:
+                ocupado = True
+                await asyncio.gather(procesar(lista[0]))
+                lista.pop(0)
+
+        except Exception as e:
+            # Maneja la excepción aquí, por ejemplo, imprime un mensaje
+            print(f"Error al interactuar con Redis: {e}")
+            # Puedes agregar un tiempo de espera antes de intentar nuevamente
+            time.sleep(5)
 
 if __name__ == "__main__":
     asyncio.run(procesar_archivos())

@@ -3,6 +3,7 @@ const yearSelect = document.getElementById('year');
 const companySelect = document.getElementById('company');
 const campaignSelect = document.getElementById('campaign');
 
+urlServer = '127.0.0.1'
 // Función para cargar años desde el backend
 async function cargarAños() {
   try {
